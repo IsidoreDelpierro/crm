@@ -1,9 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
   <head>
     <title>CRM</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <style>
+    <link rel="stylesheet" type="text/css" href="{% static '/css/main.css' %}">
+    <script>
       #logo{
       }
 
@@ -15,14 +17,14 @@
         background-color: #4cb4c7;
       }
 
-      #orders-delivered{
-        background-color: #7abecc;
+      #orders-delievered{
+        background-color: 7abecc;
       }
 
       #orders-pending{
-        background-color: #7CD1C0;
+        background-color: #7CD1C0
       }
-    </style>
+    </script>
   </head>
   <body>
     {% include "accounts/navbar.html" %}
