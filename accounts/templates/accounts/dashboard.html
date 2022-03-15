@@ -60,7 +60,7 @@
                   {% if paginated_orders.number == num %}
                     <span class="btn btn-sm btn-success">{{num}} of {{paginated_orders.paginator.num_pages}}</span>
                   {% elif num > paginated_orders.number|add:'-3' and num < paginated_orders.number|add:'3' %}
-                    <a class="btn btn-sm btn-primary" href="?page={{num}}#orders">{{num}}</a>
+                    <a class="btn btn-sm btn-secondary" href="?page={{num}}#orders">{{num}}</a>
                   {% endif %}
                 {% endfor %}
                 {% if paginated_orders.has_next %}
