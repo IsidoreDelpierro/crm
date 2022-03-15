@@ -4,6 +4,7 @@ from django.forms import inlineformset_factory
 from .models import *
 from .forms import OrderForm
 from .filters import OrderFilter
+from django.core.paginator import Paginator
 
 # Create your views here.
 def home(request):
@@ -15,7 +16,16 @@ def home(request):
     delivered = orders.filter(status='Delivered').count()
     pending = orders.filter(status='Pending').count()
     delivering = orders.filter(status='Out For Delivery').count()
-    context = {'orders': orders, 'customers': customers,
+
+    orders_paginator = Paginator(orders, per_page=5)
+    orders_page = request.GET.get('page')
+    orders = orders_paginator.get_page(orders_page)
+
+    paginator = Paginator(Order.objects.all(), 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {'paginated_orders': page_obj, 'customers': customers,
             'pending': pending, 'delivered': delivered,
             'total_orders': total_orders, 'delivering': delivering}
 

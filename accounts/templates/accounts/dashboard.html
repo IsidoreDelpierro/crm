@@ -24,23 +24,24 @@
             </tr>
           {% endfor %}
         </table>
-      </div>
-    </div>
+      </div> <!--end of card-body-->
+    </div> <!--end of col-md-5-->
 
     <div class="col-md-7">
-      <h5>LAST 5 ORDERS</h5>
+      <h5 id="orders">LAST 5 ORDERS</h5>
       <hr>
-      <div class="card card-body">
         <table class="table table-sm">
           <tr>
+            <th>ID</th>
             <th>Product</th>
             <th>Date Ordered</th>
             <th>Status</th>
             <th>Update</th>
             <th>Remove</th>
           </tr>
-          {% for order in orders %}
+          {% for order in paginated_orders %}
             <tr>
+              <td>{{order.id}}</td>
               <td>{{order.product}}</td>
               <td>{{order.date_created}}</td>
               <td>{{order.status}}</td>
@@ -48,8 +49,26 @@
               <td><a class="btn btn-sm btn-danger" href="{% url 'delete_order' order.id %}">Delete</a></td>
             </tr>
           {% endfor %}
-        </table>
-      </div>
-    </div>
+        </table><hr>
+        <div class="pagination">
+            <span class="step-links">
+                {% if paginated_orders.has_previous %}
+                    <a class="btn btn-sm btn-info" href="?page=1#orders">&#11057;</a>
+                    <a class="btn btn-sm btn-info" href="?page={{ paginated_orders.previous_page_number }}#orders">&#8656;</a>
+                {% endif %}
+                {% for num in paginated_orders.paginator.page_range %}
+                  {% if paginated_orders.number == num %}
+                    <span class="btn btn-sm btn-success">{{num}} of {{paginated_orders.paginator.num_pages}}</span>
+                  {% elif num > paginated_orders.number|add:'-3' and num < paginated_orders.number|add:'3' %}
+                    <a class="btn btn-sm btn-primary" href="?page={{num}}#orders">{{num}}</a>
+                  {% endif %}
+                {% endfor %}
+                {% if paginated_orders.has_next %}
+                    <a class="btn btn-sm btn-info" href="?page={{ paginated_orders.next_page_number }}#orders">&#8658;</a>
+                    <a class="btn btn-sm btn-info" href="?page={{ paginated_orders.paginator.num_pages }}#orders">&#8694;</a>
+                {% endif %}
+            </span>
+        </div> <!--end of pagination card-->
+      </div><!--end of col-md-7-->
   </div>
 {% endblock %}
