@@ -11,25 +11,31 @@ from django.contrib.auth import authenticate, login, logout
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+
+from .decorators import unauthenticated_user, allowed_users, admin_only
 
 # Create your views here.
+@unauthenticated_user
 def registerPage(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-    else:
-        form = CreateUserForm()
+    form = CreateUserForm()
 
-        if request.method == "POST":
-            form = CreateUserForm (request.POST)
-            if form.is_valid:
-                form.save()
-                user = form.cleaned_data.get('username')
-                messages.success(request, 'Account was created for ' + user)
-                return redirect('login')
+    if request.method == "POST":
+        form = CreateUserForm (request.POST)
+        if form.is_valid:
+            user = form.save()
+            username = form.cleaned_data.get('username')
+            
+            group = Group.objects.get(name='customer')
+            user.groups.add(group)
 
-        context = {'form':form}
-        return render(request, 'accounts/register.html', context)
+            messages.success(request, 'Account was created for ' + username)
+            return redirect('login')
 
+    context = {'form':form}
+    return render(request, 'accounts/register.html', context)
+
+@unauthenticated_user
 def loginPage(request):
     if request.method == "POST":
         username = request.POST.get('username')
@@ -51,6 +57,7 @@ def logoutUser(request):
     return redirect('login')
 
 @login_required(login_url='login')
+@admin_only
 def home(request):
     orders = Order.objects.all()
     customers = Customer.objects.all()
@@ -61,11 +68,11 @@ def home(request):
     pending = orders.filter(status='Pending').count()
     delivering = orders.filter(status='Out For Delivery').count()
 
-    orders_paginator = Paginator(orders, per_page=5)
+    orders_paginator = Paginator(orders.order_by('id'), per_page=5)
     orders_page = request.GET.get('page')
     orders = orders_paginator.get_page(orders_page)
 
-    paginator = Paginator(Order.objects.all(), 3)
+    paginator = Paginator(Order.objects.all().order_by('id'), 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -75,11 +82,19 @@ def home(request):
 
     return render(request, 'accounts/dashboard.html', context)
 
+def userPage(request):
+    context = {}
+    return render(request, 'accounts/user.html', context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def products(request):
     products = Product.objects.all()
     context = {'products': products}
     return render(request, 'accounts/products.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def customers(request, pk):
     customer = Customer.objects.get(id=pk)
 
@@ -92,6 +107,8 @@ def customers(request, pk):
                 'order_count': order_count, 'myFilter': myFilter}
     return render(request, 'accounts/customer.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def createOrder(request, pk):
     OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'), extra=5)
     customer = Customer.objects.get(id=pk)
@@ -108,6 +125,8 @@ def createOrder(request, pk):
     context = {'formset': formset}
     return render(request, 'accounts/order_form.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def updateOrder(request, pk):
     order = Order.objects.get(id=pk)
     form = OrderForm(instance=order)
@@ -120,6 +139,8 @@ def updateOrder(request, pk):
     context = {'form': form}
     return render(request, 'accounts/order_form.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def deleteOrder(request, pk):
     order = Order.objects.get(id=pk)
     if request.method == 'POST':
